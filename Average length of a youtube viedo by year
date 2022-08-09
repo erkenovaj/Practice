@@ -1,0 +1,34 @@
+import json
+import urllib
+from urllib.request import urlopen
+import matplotlib as plt
+from dateutil import parser
+
+api_key="AIzaSyBj1M3sO-3nTKH3RoqnD_59fEtcmv0AU-g"
+year = list([i for i in range(2005, 2023)])
+avg_lengths = []
+for year in year:
+    swarchUrLL = 'https://www.googleapis.com/youtube/v3/search?part=snippet&&maxResults=50&order=viewCount&publishedAfter='+str(year)+'-01-01T00%3A00%3A00Z&publishedBefore='+str(year)+'-12-31T00%3A00%3A00Z&key='+api_key
+    # print(swarchUrLL)
+    req = urllib.request.Request(swarchUrLL)
+    with urlopen(swarchUrLL) as url:
+       response = url.read().decode('utf-8')
+    data = json.loads(response)
+    all_data=data['items']
+    contentDetails=all_data[0]['id']
+    # print(contentDetails)
+    video_id=contentDetails['videoId']
+    print(video_id)
+    all_durs = []
+    for video_id in video_id:
+      searchUrl="https://www.googleapis.com/youtube/v3/videos?id="+video_id+"&key="+api_key+"&part=contentDetails"
+      response = urllib.urlopen(searchUrl).read()
+      data = json.loads(response)
+      all_data=data['items']
+      contentDetails=all_data[0]['contentDetails']
+      duration=contentDetails['duration']
+      duration = parser.parse(duration)
+      all_durs.append(duration)
+    avg_lengths.append(all_durs.mean())  
+
+plt.hist(avg_lengths)
